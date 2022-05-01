@@ -1,0 +1,75 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <form>
+                <div class="form-group">
+                    <label for="dbConnectionString">DbConnectionString</label>
+                    <div class="form-inline">
+                        <input type="text" class="form-control col-sm-10" id="dbConnectionString">
+                        <input type="button" class="btn btn-secondary col-sm-2" id="test_dbConnectionString" value="測試連線">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="className">ClassName</label>
+                    <div class="form-inline">
+                        <input type="text" class="form-control col-sm-10" id="className">
+                        <input type="button" class="btn btn-danger col-sm-2" id="generaterClassButton" value="建立Class" disabled>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="sp">Stored Procedure Or Sql Statement Exec</label>
+                    <textarea class="form-control" id="sp" style="resize:both; width:500px; height: 500px;"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label for="genC">Generater Class</label>
+                <textarea class="form-control" id="genC" style="resize:both; width:500px; height: 672px;"></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('#dbConnectionString').val("Data Source=.; Database=AAA; Integrated Security=SSPI;");
+    });
+
+    // 連線測試
+    $('#test_dbConnectionString').click(() => {
+        $.post("/Home/CheckConnectionString", {
+            ConnectionString: $('#dbConnectionString').val()
+        }).then((res) => {
+            alert(res ? '連線成功' : '連線失敗');
+
+            if (res === true)
+                $('#generaterClassButton').attr('disabled', false)
+                    .removeClass('btn-danger')
+                    .addClass('btn-success');
+            else
+                $('#generaterClassButton').attr('disabled', true)
+                    .removeClass('btn-success')
+                    .addClass('btn-danger');
+        });
+    });
+
+    $('#generaterClassButton').click(() => {
+        $.post("/Home/GeneraterClassAction", {
+            ConnectionString: $('#dbConnectionString').val(),
+            ClassName: $('#className').val(),
+            SpExec: $('#sp').val()
+        }).then((res) => {
+            if (res.IsSuccess === false)
+                alert(res.ErrorMessage);
+
+            if (res.IsSuccess === true) {
+                $('#genC').val(res.PocoClass);
+            }
+        });
+    });
+</script>
